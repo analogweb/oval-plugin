@@ -1,7 +1,10 @@
 package org.analogweb.oval;
 
+import static org.analogweb.oval.OvalPluginModuleConfig.PLUGIN_MESSAGE_RESOURCE;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,63 +21,117 @@ import org.analogweb.util.AnnotationUtils;
 import org.analogweb.util.ClassUtils;
 import org.analogweb.util.logging.Log;
 import org.analogweb.util.logging.Logs;
+import org.analogweb.util.logging.Markers;
 
+/**
+ * {@link AssertValid}が付与された対象のオブジェクトに対する
+ * 検証({{@link Validator#validate(Object)})を行う{@link AbstractInvocationProcessor}
+ * の実装です。検証に適合しない、且つエントリポイントメソッドの引数に
+ * {@link ConstraintViolations}が存在する場合は、引数に検証結果
+ * ({@link ConstraintViolations})を設定します。(設定される引数は
+ * １つのみです。)存在しない場合は{@link ConstraintViolationException}
+ * が投げられます。
+ * @author snowgoose
+ */
 public class OvalInvocationProcessor extends AbstractInvocationProcessor {
-    
+
     private static final Log log = Logs.getLog(OvalInvocationProcessor.class);
 
     @Override
     public Object onInvoke(Method method, Invocation invocation, InvocationMetadata metadata,
             InvocationArguments args) {
-        Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-        Class<?>[] argTypes = metadata.getArgumentTypes();
+        List<Object> targets = findValidationTargets(method, invocation, metadata, args);
+        if (targets.isEmpty()) {
+            return super.onInvoke(method, invocation, metadata, args);
+        }
         final List<ConstraintViolation> violations = new LinkedList<ConstraintViolation>();
-        int indexOfViolations = indexOfViolations(argTypes);
-        List<Object> argList = args.asList();
-        for (int index = 0, limit = argTypes.length; index < limit; index++) {
-            if(nesessaryValidation(parameterAnnotations[index])){
-                log.info("valiate!");
-                Validator validator = getValidator();
-                violations.addAll(validator.validate(argList.get(index)));
+        Validator validator = getValidator();
+        for (Object validationTarget : targets) {
+            log.log(PLUGIN_MESSAGE_RESOURCE, Markers.VARIABLE_ACCESS, "DOVV000001",
+                    validationTarget);
+            List<ConstraintViolation> verificationResult = validator.validate(validationTarget);
+            logValidationResult(validationTarget, verificationResult);
+            violations.addAll(verificationResult);
+        }
+        if (violations.isEmpty() == false) {
+            int indexOfViolations = findIndexOfViolations(metadata);
+            if (indexOfViolations == -1) {
+                throw new ConstraintViolationException(
+                        new ConstraintViolations<ConstraintViolation>() {
+                            @Override
+                            public Collection<ConstraintViolation> all() {
+                                return violations;
+                            }
+                        });
+            } else {
+                args.putInvocationArgument(indexOfViolations,
+                        new ConstraintViolations<ConstraintViolation>() {
+                            @Override
+                            public Collection<ConstraintViolation> all() {
+                                return violations;
+                            }
+                        });
             }
         }
-        // TODO none of indexOfViolations.
-        args.putInvocationArgument(indexOfViolations, new ConstraintViolations<ConstraintViolation>() {
-            @Override
-            public Collection<ConstraintViolation> all() {
-                return violations;
-            }
-        });
         return super.onInvoke(method, invocation, metadata, args);
     }
 
-    private int indexOfViolations(Class<?>[] argTypes) {
-        String cName = ConstraintViolations.class.getCanonicalName();
-        for(int i = 0;i < argTypes.length;i++){
-            if(argTypes[i].getCanonicalName().equals(cName)){
-                return i;
+    private void logValidationResult(Object validationTarget,
+            List<ConstraintViolation> verificationResult) {
+        if (log.isDebugEnabled(Markers.VARIABLE_ACCESS)) {
+            if (verificationResult.isEmpty()) {
+                log.log(PLUGIN_MESSAGE_RESOURCE, Markers.VARIABLE_ACCESS, "DOVV000002",
+                        validationTarget);
+            } else {
+                log.log(PLUGIN_MESSAGE_RESOURCE, Markers.VARIABLE_ACCESS, "DOVV000003",
+                        validationTarget, verificationResult.size());
             }
         }
-        return -1;
     }
 
-    private Validator getValidator() {
-        return new Validator();
+    protected List<Object> findValidationTargets(Method method, Invocation invocation,
+            InvocationMetadata metadata, InvocationArguments args) {
+        Annotation[][] parameterAnnotations = method.getParameterAnnotations();
+        List<Object> values = args.asList();
+        List<Object> instances = new ArrayList<Object>();
+        for (int index = 0, limit = parameterAnnotations.length; index < limit; index++) {
+            if (validateNesessary(parameterAnnotations[index])) {
+                instances.add(values.get(index));
+            }
+        }
+        return instances;
+
     }
 
     @SuppressWarnings("unchecked")
-    private boolean nesessaryValidation(Annotation[] parameterAnnotations) {
-        AssertValid assertValid = AnnotationUtils.findAnnotation(AssertValid.class, parameterAnnotations);
-        if(assertValid != null){
+    private boolean validateNesessary(Annotation[] parameterAnnotations) {
+        AssertValid assertValid = AnnotationUtils.findAnnotation(AssertValid.class,
+                parameterAnnotations);
+        if (assertValid != null) {
             return true;
         }
-        Class<Annotation> valid = (Class<Annotation>) ClassUtils.forNameQuietly("javax.validation.Valid");
-        if(valid != null){
+        Class<Annotation> valid = (Class<Annotation>) ClassUtils
+                .forNameQuietly("javax.validation.Valid");
+        if (valid != null) {
             Annotation a = AnnotationUtils.findAnnotation(valid, parameterAnnotations);
             return (a != null);
         }
         return false;
     }
 
+    protected int findIndexOfViolations(InvocationMetadata metadata) {
+        String cName = ConstraintViolations.class.getCanonicalName();
+        Class<?>[] argTypes = metadata.getArgumentTypes();
+        for (int i = 0; i < argTypes.length; i++) {
+            if (argTypes[i].getCanonicalName().equals(cName)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    protected Validator getValidator() {
+        return new Validator();
+    }
 
 }
