@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 
 import net.sf.oval.ConstraintViolation;
@@ -19,10 +20,12 @@ import net.sf.oval.constraint.NotNull;
 import org.analogweb.Invocation;
 import org.analogweb.InvocationArguments;
 import org.analogweb.InvocationMetadata;
+import org.analogweb.RequestContext;
 import org.analogweb.annotation.On;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -34,6 +37,7 @@ public class OvalInvocationProcessorTest {
     private Invocation invocation;
     private InvocationMetadata metadata;
     private InvocationArguments args;
+    private RequestContext request;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -44,6 +48,7 @@ public class OvalInvocationProcessorTest {
         invocation = mock(Invocation.class);
         metadata = mock(InvocationMetadata.class);
         args = mock(InvocationArguments.class);
+        request = mock(RequestContext.class);
     }
 
     @Test
@@ -92,6 +97,21 @@ public class OvalInvocationProcessorTest {
         when(metadata.getArgumentTypes()).thenReturn(method.getParameterTypes());
         when(args.asList()).thenReturn(Arrays.asList((Object) new Bean()));
         processor.onInvoke(method, invocation, metadata, args);
+    }
+    
+    @Test
+    // TODO 
+    @Ignore
+    public void testProcessException(){
+        ConstraintViolations<ConstraintViolation> violations = new ConstraintViolations<ConstraintViolation>() {
+            @Override
+            public Collection<ConstraintViolation> all() {
+                // TODO 
+                return null;
+            }
+        };
+        ConstraintViolationException ex = new ConstraintViolationException(violations);
+        processor.processException(ex, request, args, metadata);
     }
 
     @On
