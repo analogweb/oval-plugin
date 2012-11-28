@@ -13,7 +13,6 @@ import net.sf.oval.ConstraintViolation;
 import net.sf.oval.Validator;
 import net.sf.oval.constraint.AssertValid;
 
-import org.analogweb.Invocation;
 import org.analogweb.InvocationArguments;
 import org.analogweb.InvocationMetadata;
 import org.analogweb.core.AbstractInvocationProcessor;
@@ -38,11 +37,10 @@ public class OvalInvocationProcessor extends AbstractInvocationProcessor {
     private static final Log log = Logs.getLog(OvalInvocationProcessor.class);
 
     @Override
-    public Object onInvoke(Method method, Invocation invocation, InvocationMetadata metadata,
-            InvocationArguments args) {
-        List<Object> targets = findValidationTargets(method, invocation, metadata, args);
+    public Object onInvoke(Method method, InvocationMetadata metadata, InvocationArguments args) {
+        List<Object> targets = findValidationTargets(method, metadata, args);
         if (targets.isEmpty()) {
-            return super.onInvoke(method, invocation, metadata, args);
+            return super.onInvoke(method, metadata, args);
         }
         final List<ConstraintViolation> violations = new LinkedList<ConstraintViolation>();
         Validator validator = getValidator();
@@ -73,7 +71,7 @@ public class OvalInvocationProcessor extends AbstractInvocationProcessor {
                         });
             }
         }
-        return super.onInvoke(method, invocation, metadata, args);
+        return super.onInvoke(method, metadata, args);
     }
 
     private void logValidationResult(Object validationTarget,
@@ -89,8 +87,8 @@ public class OvalInvocationProcessor extends AbstractInvocationProcessor {
         }
     }
 
-    protected List<Object> findValidationTargets(Method method, Invocation invocation,
-            InvocationMetadata metadata, InvocationArguments args) {
+    protected List<Object> findValidationTargets(Method method, InvocationMetadata metadata,
+            InvocationArguments args) {
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
         List<Object> values = args.asList();
         List<Object> instances = new ArrayList<Object>();

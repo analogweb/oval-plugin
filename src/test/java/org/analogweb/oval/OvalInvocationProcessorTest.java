@@ -17,7 +17,6 @@ import net.sf.oval.constraint.AssertValid;
 import net.sf.oval.constraint.Min;
 import net.sf.oval.constraint.NotNull;
 
-import org.analogweb.Invocation;
 import org.analogweb.InvocationArguments;
 import org.analogweb.InvocationMetadata;
 import org.analogweb.RequestContext;
@@ -34,7 +33,6 @@ import org.mockito.ArgumentCaptor;
 public class OvalInvocationProcessorTest {
 
     private OvalInvocationProcessor processor;
-    private Invocation invocation;
     private InvocationMetadata metadata;
     private InvocationArguments args;
     private RequestContext request;
@@ -45,7 +43,6 @@ public class OvalInvocationProcessorTest {
     @Before
     public void setUp() throws Exception {
         processor = new OvalInvocationProcessor();
-        invocation = mock(Invocation.class);
         metadata = mock(InvocationMetadata.class);
         args = mock(InvocationArguments.class);
         request = mock(RequestContext.class);
@@ -58,7 +55,7 @@ public class OvalInvocationProcessorTest {
                 ConstraintViolations.class);
         when(metadata.getArgumentTypes()).thenReturn(method.getParameterTypes());
         when(args.asList()).thenReturn(Arrays.asList((Object) new Bean(), null));
-        processor.onInvoke(method, invocation, metadata, args);
+        processor.onInvoke(method, metadata, args);
         ArgumentCaptor<ConstraintViolations> violations = ArgumentCaptor
                 .forClass(ConstraintViolations.class);
         verify(args).putInvocationArgument(eq(1), violations.capture());
@@ -72,7 +69,7 @@ public class OvalInvocationProcessorTest {
         when(metadata.getArgumentTypes()).thenReturn(method.getParameterTypes());
         when(args.asList()).thenReturn(Collections.emptyList());
         // nothing to do.
-        processor.onInvoke(method, invocation, metadata, args);
+        processor.onInvoke(method, metadata, args);
     }
 
     @Test
@@ -96,13 +93,13 @@ public class OvalInvocationProcessorTest {
         Method method = EntryPointInstance.class.getMethod("doSomething", Bean.class);
         when(metadata.getArgumentTypes()).thenReturn(method.getParameterTypes());
         when(args.asList()).thenReturn(Arrays.asList((Object) new Bean()));
-        processor.onInvoke(method, invocation, metadata, args);
+        processor.onInvoke(method, metadata, args);
     }
-    
+
     @Test
     // TODO 
     @Ignore
-    public void testProcessException(){
+    public void testProcessException() {
         ConstraintViolations<ConstraintViolation> violations = new ConstraintViolations<ConstraintViolation>() {
             @Override
             public Collection<ConstraintViolation> all() {
