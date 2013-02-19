@@ -2,7 +2,7 @@ package org.analogweb.oval;
 
 import net.sf.oval.ConstraintViolation;
 
-import org.analogweb.exception.ApplicationRuntimeException;
+import org.analogweb.core.ApplicationRuntimeException;
 
 /**
  * エントリポイントを構成する値の検証に失敗した場合に投げられる例外です。
