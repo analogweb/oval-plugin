@@ -23,11 +23,11 @@ public class OvalPluginModuleConfigTest {
 
     @Test
     public void test() {
-        when(builder.addInvocationProcessorClass(OvalInvocationProcessor.class))
+        when(builder.addInvocationInterceptorClass(OvalInvocationProcessor.class))
                 .thenReturn(builder);
         ModulesBuilder actual = config.prepare(builder);
         assertThat(actual, is(builder));
-        verify(builder).addInvocationProcessorClass(OvalInvocationProcessor.class);
+        verify(builder).addInvocationInterceptorClass(OvalInvocationProcessor.class);
     }
 
 }

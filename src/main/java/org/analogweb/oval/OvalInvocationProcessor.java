@@ -13,11 +13,14 @@ import net.sf.oval.ConstraintViolation;
 import net.sf.oval.Validator;
 import net.sf.oval.constraint.AssertValid;
 
+import org.analogweb.Invocation;
 import org.analogweb.InvocationArguments;
 import org.analogweb.InvocationMetadata;
+import org.analogweb.core.AbstractInvocationInterceptor;
 import org.analogweb.core.AbstractInvocationProcessor;
 import org.analogweb.util.AnnotationUtils;
 import org.analogweb.util.ClassUtils;
+import org.analogweb.util.ReflectionUtils;
 import org.analogweb.util.logging.Log;
 import org.analogweb.util.logging.Logs;
 import org.analogweb.util.logging.Markers;
@@ -32,15 +35,19 @@ import org.analogweb.util.logging.Markers;
  * が投げられます。
  * @author snowgoose
  */
-public class OvalInvocationProcessor extends AbstractInvocationProcessor {
+public class OvalInvocationProcessor extends AbstractInvocationInterceptor {
 
     private static final Log log = Logs.getLog(OvalInvocationProcessor.class);
 
     @Override
-    public Object onInvoke(Method method, InvocationMetadata metadata, InvocationArguments args) {
+    public Object onInvoke(Invocation invocation, InvocationMetadata metadata) {
+		Method method = ReflectionUtils.getMethodQuietly(metadata
+				.getInvocationClass(), metadata.getMethodName(), metadata
+				.getArgumentTypes());
+		InvocationArguments args = invocation.getInvocationArguments();
         List<Object> targets = findValidationTargets(method, metadata, args);
         if (targets.isEmpty()) {
-            return super.onInvoke(method, metadata, args);
+            return invocation.invoke();
         }
         final List<ConstraintViolation> violations = new LinkedList<ConstraintViolation>();
         Validator validator = getValidator();
@@ -62,16 +69,17 @@ public class OvalInvocationProcessor extends AbstractInvocationProcessor {
                             }
                         });
             } else {
-                args.putInvocationArgument(indexOfViolations,
-                        new ConstraintViolations<ConstraintViolation>() {
-                            @Override
-                            public Collection<ConstraintViolation> all() {
-                                return violations;
-                            }
-                        });
+				args.putInvocationArgument(
+						indexOfViolations,
+						new ConstraintViolations<ConstraintViolation>() {
+							@Override
+							public Collection<ConstraintViolation> all() {
+								return violations;
+							}
+						});
             }
         }
-        return super.onInvoke(method, metadata, args);
+        return invocation.invoke();
     }
 
     private void logValidationResult(Object validationTarget,

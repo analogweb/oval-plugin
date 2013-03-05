@@ -28,7 +28,7 @@ public class OvalPluginModuleConfig implements PluginModulesConfig {
     @Override
     public ModulesBuilder prepare(ModulesBuilder builder) {
         log.log(PLUGIN_MESSAGE_RESOURCE, Markers.BOOT_APPLICATION, "IOVB000001");
-        builder.addInvocationProcessorClass(OvalInvocationProcessor.class);
+        builder.addInvocationInterceptorClass(OvalInvocationProcessor.class);
         return builder;
     }
 

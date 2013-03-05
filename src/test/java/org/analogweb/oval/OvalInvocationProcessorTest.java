@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 
 import net.sf.oval.ConstraintViolation;
@@ -17,14 +16,13 @@ import net.sf.oval.constraint.AssertValid;
 import net.sf.oval.constraint.Min;
 import net.sf.oval.constraint.NotNull;
 
+import org.analogweb.Invocation;
 import org.analogweb.InvocationArguments;
 import org.analogweb.InvocationMetadata;
-import org.analogweb.RequestContext;
 import org.analogweb.annotation.On;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -35,7 +33,7 @@ public class OvalInvocationProcessorTest {
     private OvalInvocationProcessor processor;
     private InvocationMetadata metadata;
     private InvocationArguments args;
-    private RequestContext request;
+    private Invocation invocation;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -44,18 +42,21 @@ public class OvalInvocationProcessorTest {
     public void setUp() throws Exception {
         processor = new OvalInvocationProcessor();
         metadata = mock(InvocationMetadata.class);
+        invocation = mock(Invocation.class);
         args = mock(InvocationArguments.class);
-        request = mock(RequestContext.class);
     }
 
     @Test
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void testOnInvoke() throws Exception {
         Method method = EntryPointInstance.class.getMethod("doAnything", Bean.class,
                 ConstraintViolations.class);
         when(metadata.getArgumentTypes()).thenReturn(method.getParameterTypes());
+        when(metadata.getInvocationClass()).thenReturn((Class) EntryPointInstance.class);
+        when(metadata.getMethodName()).thenReturn("doAnything");
+        when(invocation.getInvocationArguments()).thenReturn(args);
         when(args.asList()).thenReturn(Arrays.asList((Object) new Bean(), null));
-        processor.onInvoke(method, metadata, args);
+        processor.onInvoke(invocation, metadata);
         ArgumentCaptor<ConstraintViolations> violations = ArgumentCaptor
                 .forClass(ConstraintViolations.class);
         verify(args).putInvocationArgument(eq(1), violations.capture());
@@ -64,15 +65,20 @@ public class OvalInvocationProcessorTest {
     }
 
     @Test
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void testOnInvokeWithoutAssertValid() throws Exception {
         Method method = EntryPointInstance.class.getMethod("doNothing", String.class);
         when(metadata.getArgumentTypes()).thenReturn(method.getParameterTypes());
+        when(metadata.getInvocationClass()).thenReturn((Class) EntryPointInstance.class);
+        when(metadata.getMethodName()).thenReturn("doNothing");
+        when(invocation.getInvocationArguments()).thenReturn(args);
         when(args.asList()).thenReturn(Collections.emptyList());
         // nothing to do.
-        processor.onInvoke(method, metadata, args);
+        processor.onInvoke(invocation, metadata);
     }
 
-    @Test
+	@Test
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void testOnInvokeWithViolationWithoutConstraintViolations() throws Exception {
         thrown.expect(new BaseMatcher<ConstraintViolationException>() {
             @Override
@@ -92,23 +98,11 @@ public class OvalInvocationProcessorTest {
         });
         Method method = EntryPointInstance.class.getMethod("doSomething", Bean.class);
         when(metadata.getArgumentTypes()).thenReturn(method.getParameterTypes());
+        when(metadata.getInvocationClass()).thenReturn((Class) EntryPointInstance.class);
+        when(metadata.getMethodName()).thenReturn("doSomething");
+        when(invocation.getInvocationArguments()).thenReturn(args);
         when(args.asList()).thenReturn(Arrays.asList((Object) new Bean()));
-        processor.onInvoke(method, metadata, args);
-    }
-
-    @Test
-    // TODO 
-    @Ignore
-    public void testProcessException() {
-        ConstraintViolations<ConstraintViolation> violations = new ConstraintViolations<ConstraintViolation>() {
-            @Override
-            public Collection<ConstraintViolation> all() {
-                // TODO 
-                return null;
-            }
-        };
-        ConstraintViolationException ex = new ConstraintViolationException(violations);
-        processor.processException(ex, request, args, metadata);
+        processor.onInvoke(invocation, metadata);
     }
 
     @On
