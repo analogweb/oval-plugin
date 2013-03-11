@@ -30,106 +30,154 @@ import org.mockito.ArgumentCaptor;
 
 public class OvalInvocationProcessorTest {
 
-    private OvalInvocationProcessor processor;
-    private InvocationMetadata metadata;
-    private InvocationArguments args;
-    private Invocation invocation;
+	private OvalInvocationProcessor processor;
+	private InvocationMetadata metadata;
+	private InvocationArguments args;
+	private Invocation invocation;
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
-    @Before
-    public void setUp() throws Exception {
-        processor = new OvalInvocationProcessor();
-        metadata = mock(InvocationMetadata.class);
-        invocation = mock(Invocation.class);
-        args = mock(InvocationArguments.class);
-    }
-
-    @Test
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public void testOnInvoke() throws Exception {
-        Method method = EntryPointInstance.class.getMethod("doAnything", Bean.class,
-                ConstraintViolations.class);
-        when(metadata.getArgumentTypes()).thenReturn(method.getParameterTypes());
-        when(metadata.getInvocationClass()).thenReturn((Class) EntryPointInstance.class);
-        when(metadata.getMethodName()).thenReturn("doAnything");
-        when(invocation.getInvocationArguments()).thenReturn(args);
-        when(args.asList()).thenReturn(Arrays.asList((Object) new Bean(), null));
-        processor.onInvoke(invocation, metadata);
-        ArgumentCaptor<ConstraintViolations> violations = ArgumentCaptor
-                .forClass(ConstraintViolations.class);
-        verify(args).putInvocationArgument(eq(1), violations.capture());
-        ConstraintViolations<?> actual = violations.getValue();
-        assertThat(actual.all().size(), is(1));
-    }
-
-    @Test
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public void testOnInvokeWithoutAssertValid() throws Exception {
-        Method method = EntryPointInstance.class.getMethod("doNothing", String.class);
-        when(metadata.getArgumentTypes()).thenReturn(method.getParameterTypes());
-        when(metadata.getInvocationClass()).thenReturn((Class) EntryPointInstance.class);
-        when(metadata.getMethodName()).thenReturn("doNothing");
-        when(invocation.getInvocationArguments()).thenReturn(args);
-        when(args.asList()).thenReturn(Collections.emptyList());
-        // nothing to do.
-        processor.onInvoke(invocation, metadata);
-    }
+	@Before
+	public void setUp() throws Exception {
+		processor = new OvalInvocationProcessor();
+		metadata = mock(InvocationMetadata.class);
+		invocation = mock(Invocation.class);
+		args = mock(InvocationArguments.class);
+	}
 
 	@Test
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public void testOnInvokeWithViolationWithoutConstraintViolations() throws Exception {
-        thrown.expect(new BaseMatcher<ConstraintViolationException>() {
-            @Override
-            public boolean matches(Object arg0) {
-                if (arg0 instanceof ConstraintViolationException) {
-                    ConstraintViolations<ConstraintViolation> v = ((ConstraintViolationException) arg0)
-                            .violations();
-                    assertThat(v.all().size(), is(1));
-                    return true;
-                }
-                return false;
-            }
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void testOnInvoke() throws Exception {
+		Method method = EntryPointInstance.class.getMethod("doAnything",
+				Bean.class, ConstraintViolations.class);
+		when(metadata.getArgumentTypes())
+				.thenReturn(method.getParameterTypes());
+		when(metadata.getInvocationClass()).thenReturn(
+				(Class) EntryPointInstance.class);
+		when(metadata.getMethodName()).thenReturn("doAnything");
+		when(invocation.getInvocationArguments()).thenReturn(args);
+		when(args.asList())
+				.thenReturn(Arrays.asList((Object) new Bean(), null));
+		processor.onInvoke(invocation, metadata);
+		ArgumentCaptor<ConstraintViolations> violations = ArgumentCaptor
+				.forClass(ConstraintViolations.class);
+		verify(args).putInvocationArgument(eq(1), violations.capture());
+		ConstraintViolations<?> actual = violations.getValue();
+		assertThat(actual.all().size(), is(1));
+	}
 
-            @Override
-            public void describeTo(Description arg0) {
-            }
-        });
-        Method method = EntryPointInstance.class.getMethod("doSomething", Bean.class);
-        when(metadata.getArgumentTypes()).thenReturn(method.getParameterTypes());
-        when(metadata.getInvocationClass()).thenReturn((Class) EntryPointInstance.class);
-        when(metadata.getMethodName()).thenReturn("doSomething");
-        when(invocation.getInvocationArguments()).thenReturn(args);
-        when(args.asList()).thenReturn(Arrays.asList((Object) new Bean()));
-        processor.onInvoke(invocation, metadata);
-    }
+	@Test
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void testOnInvokeWithoutAssertValid() throws Exception {
+		Method method = EntryPointInstance.class.getMethod("doNothing",
+				String.class);
+		when(metadata.getArgumentTypes())
+				.thenReturn(method.getParameterTypes());
+		when(metadata.getInvocationClass()).thenReturn(
+				(Class) EntryPointInstance.class);
+		when(metadata.getMethodName()).thenReturn("doNothing");
+		when(invocation.getInvocationArguments()).thenReturn(args);
+		when(args.asList()).thenReturn(Collections.emptyList());
+		// nothing to do.
+		processor.onInvoke(invocation, metadata);
+	}
 
-    @On
-    public static class EntryPointInstance {
+	@Test
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void testOnInvokeWithViolationWithoutConstraintViolations()
+			throws Exception {
+		thrown.expect(new BaseMatcher<ConstraintViolationException>() {
+			@Override
+			public boolean matches(Object arg0) {
+				if (arg0 instanceof ConstraintViolationException) {
+					ConstraintViolations<ConstraintViolation> v = ((ConstraintViolationException) arg0)
+							.violations();
+					assertThat(v.all().size(), is(1));
+					return true;
+				}
+				return false;
+			}
 
-        @On
-        public String doNothing(String b) {
-            return "Do nothing.";
-        }
+			@Override
+			public void describeTo(Description arg0) {
+			}
+		});
+		Method method = EntryPointInstance.class.getMethod("doSomething",
+				Bean.class);
+		when(metadata.getArgumentTypes())
+				.thenReturn(method.getParameterTypes());
+		when(metadata.getInvocationClass()).thenReturn(
+				(Class) EntryPointInstance.class);
+		when(metadata.getMethodName()).thenReturn("doSomething");
+		when(invocation.getInvocationArguments()).thenReturn(args);
+		when(args.asList()).thenReturn(Arrays.asList((Object) new Bean()));
+		processor.onInvoke(invocation, metadata);
+	}
 
-        @On
-        public String doSomething(@AssertValid Bean b) {
-            return "Do something.";
-        }
+	@Test
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void testOnInvokeWithMethodViolationWithoutConstraintViolations()
+			throws Exception {
+		thrown.expect(new BaseMatcher<ConstraintViolationException>() {
+			@Override
+			public boolean matches(Object arg0) {
+				if (arg0 instanceof ConstraintViolationException) {
+					ConstraintViolations<ConstraintViolation> v = ((ConstraintViolationException) arg0)
+							.violations();
+					assertThat(v.all().size(), is(1));
+					return true;
+				}
+				return false;
+			}
 
-        @On
-        public String doAnything(@AssertValid Bean b,
-                ConstraintViolations<ConstraintViolation> violations) {
-            return "Do anything.";
-        }
-    }
+			@Override
+			public void describeTo(Description arg0) {
+			}
+		});
+		Method method = EntryPointInstance.class.getMethod("doSomethingElse",
+				Bean.class);
+		when(metadata.getArgumentTypes())
+				.thenReturn(method.getParameterTypes());
+		when(metadata.getInvocationClass()).thenReturn(
+				(Class) EntryPointInstance.class);
+		when(metadata.getMethodName()).thenReturn("doSomething");
+		when(invocation.getInvocationArguments()).thenReturn(args);
+		when(args.asList()).thenReturn(Arrays.asList((Object) new Bean()));
+		processor.onInvoke(invocation, metadata);
+	}
 
-    public static class Bean {
-        @NotNull
-        private String name;
-        @Min(value = 0)
-        private int age;
-    }
+	@On
+	public static class EntryPointInstance {
+
+		@On
+		public String doNothing(String b) {
+			return "Do nothing.";
+		}
+
+		@On
+		public String doSomething(@AssertValid Bean b) {
+			return "Do something.";
+		}
+
+		@On
+		@AssertValid
+		public String doSomethingElse(Bean b) {
+			return "Do something.";
+		}
+
+		@On
+		public String doAnything(@AssertValid Bean b,
+				ConstraintViolations<ConstraintViolation> violations) {
+			return "Do anything.";
+		}
+	}
+
+	public static class Bean {
+		@NotNull
+		private String name;
+		@Min(value = 0)
+		private int age;
+	}
 
 }
