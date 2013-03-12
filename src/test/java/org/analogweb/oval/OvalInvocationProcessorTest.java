@@ -10,12 +10,16 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import net.sf.oval.ConstraintViolation;
+import net.sf.oval.Validator;
 import net.sf.oval.constraint.AssertValid;
 import net.sf.oval.constraint.Min;
 import net.sf.oval.constraint.NotNull;
+import net.sf.oval.exception.ValidationFailedException;
 
+import org.analogweb.ContainerAdaptor;
 import org.analogweb.Invocation;
 import org.analogweb.InvocationArguments;
 import org.analogweb.InvocationMetadata;
@@ -145,6 +149,40 @@ public class OvalInvocationProcessorTest {
 		when(invocation.getInvocationArguments()).thenReturn(args);
 		when(args.asList()).thenReturn(Arrays.asList((Object) new Bean()));
 		processor.onInvoke(invocation, metadata);
+	}
+
+	@Test
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void testOnInvokeWithContainerAdaptor() throws Exception {
+		Validator validator = new Validator() {
+			@Override
+			public List<ConstraintViolation> validate(Object validatedObject)
+					throws IllegalArgumentException, ValidationFailedException {
+				// Custom validator always return empty violations.
+				return Collections.emptyList();
+			}
+		};
+		ContainerAdaptor container = mock(ContainerAdaptor.class);
+		when(container.getInstanceOfType(Validator.class))
+				.thenReturn(validator);
+		processor.setModulesContainerAdaptor(container);
+
+		Method method = EntryPointInstance.class.getMethod("doAnything",
+				Bean.class, ConstraintViolations.class);
+		when(metadata.getArgumentTypes())
+				.thenReturn(method.getParameterTypes());
+		when(metadata.getInvocationClass()).thenReturn(
+				(Class) EntryPointInstance.class);
+		when(metadata.getMethodName()).thenReturn("doAnything");
+		when(invocation.getInvocationArguments()).thenReturn(args);
+		when(args.asList())
+				.thenReturn(Arrays.asList((Object) new Bean(), null));
+		processor.onInvoke(invocation, metadata);
+		ArgumentCaptor<ConstraintViolations> violations = ArgumentCaptor
+				.forClass(ConstraintViolations.class);
+		verify(args).putInvocationArgument(eq(1), violations.capture());
+		ConstraintViolations<?> actual = violations.getValue();
+		assertThat(actual.all().size(), is(0));
 	}
 
 	@On

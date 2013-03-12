@@ -13,13 +13,16 @@ import net.sf.oval.ConstraintViolation;
 import net.sf.oval.Validator;
 import net.sf.oval.constraint.AssertValid;
 
+import org.analogweb.ContainerAdaptor;
 import org.analogweb.Invocation;
 import org.analogweb.InvocationArguments;
 import org.analogweb.InvocationMetadata;
+import org.analogweb.ModulesContainerAdaptorAware;
 import org.analogweb.core.AbstractInvocationInterceptor;
 import org.analogweb.core.AbstractInvocationProcessor;
 import org.analogweb.util.AnnotationUtils;
 import org.analogweb.util.ClassUtils;
+import org.analogweb.util.CollectionUtils;
 import org.analogweb.util.ReflectionUtils;
 import org.analogweb.util.logging.Log;
 import org.analogweb.util.logging.Logs;
@@ -33,9 +36,11 @@ import org.analogweb.util.logging.Markers;
  * が投げられます。
  * @author snowgoose
  */
-public class OvalInvocationProcessor extends AbstractInvocationInterceptor {
+public class OvalInvocationProcessor extends AbstractInvocationInterceptor
+		implements ModulesContainerAdaptorAware {
 
 	private static final Log log = Logs.getLog(OvalInvocationProcessor.class);
+	private ContainerAdaptor container;
 
 	@Override
 	public Object onInvoke(Invocation invocation, InvocationMetadata metadata) {
@@ -57,25 +62,23 @@ public class OvalInvocationProcessor extends AbstractInvocationInterceptor {
 			logValidationResult(validationTarget, verificationResult);
 			violations.addAll(verificationResult);
 		}
-		if (violations.isEmpty() == false) {
-			int indexOfViolations = findIndexOfViolations(metadata);
-			if (indexOfViolations == -1) {
-				throw new ConstraintViolationException(
-						new ConstraintViolations<ConstraintViolation>() {
-							@Override
-							public Collection<ConstraintViolation> all() {
-								return violations;
-							}
-						});
-			} else {
-				args.putInvocationArgument(indexOfViolations,
-						new ConstraintViolations<ConstraintViolation>() {
-							@Override
-							public Collection<ConstraintViolation> all() {
-								return violations;
-							}
-						});
-			}
+		int indexOfViolations = findIndexOfViolations(metadata);
+		if (indexOfViolations == -1 && CollectionUtils.isNotEmpty(violations)) {
+			throw new ConstraintViolationException(
+					new ConstraintViolations<ConstraintViolation>() {
+						@Override
+						public Collection<ConstraintViolation> all() {
+							return violations;
+						}
+					});
+		} else {
+			args.putInvocationArgument(indexOfViolations,
+					new ConstraintViolations<ConstraintViolation>() {
+						@Override
+						public Collection<ConstraintViolation> all() {
+							return violations;
+						}
+					});
 		}
 		return invocation.invoke();
 	}
@@ -142,7 +145,19 @@ public class OvalInvocationProcessor extends AbstractInvocationInterceptor {
 	}
 
 	protected Validator getValidator() {
+		if (this.container != null) {
+			Validator validator = this.container
+					.getInstanceOfType(Validator.class);
+			if (validator != null) {
+				return validator;
+			}
+		}
 		return new Validator();
+	}
+
+	@Override
+	public void setModulesContainerAdaptor(ContainerAdaptor containerAdaptor) {
+		this.container = containerAdaptor;
 	}
 
 }
