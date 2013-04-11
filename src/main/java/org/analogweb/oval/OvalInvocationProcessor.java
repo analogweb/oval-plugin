@@ -1,3 +1,4 @@
+
 package org.analogweb.oval;
 
 import static org.analogweb.oval.OvalPluginModuleConfig.PLUGIN_MESSAGE_RESOURCE;
@@ -19,7 +20,6 @@ import org.analogweb.InvocationArguments;
 import org.analogweb.InvocationMetadata;
 import org.analogweb.ModulesContainerAdaptorAware;
 import org.analogweb.core.AbstractInvocationInterceptor;
-import org.analogweb.core.AbstractInvocationProcessor;
 import org.analogweb.util.AnnotationUtils;
 import org.analogweb.util.ClassUtils;
 import org.analogweb.util.CollectionUtils;
@@ -30,7 +30,7 @@ import org.analogweb.util.logging.Markers;
 
 /**
  * {@link AssertValid}が付与された対象のオブジェクトに対する 検証({{@link Validator#validate(Object)}
- * )を行う{@link AbstractInvocationProcessor} の実装です。検証に適合しない、且つエントリポイントメソッドの引数に
+ * )を行う{@link AbstractInvocationInterceptor} の実装です。検証に適合しない、且つエントリポイントメソッドの引数に
  * {@link ConstraintViolations}が存在する場合は、引数に検証結果 ({@link ConstraintViolations}
  * )を設定します。(設定される引数は １つのみです。)存在しない場合は{@link ConstraintViolationException}
  * が投げられます。
