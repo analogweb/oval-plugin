@@ -23,7 +23,7 @@ import org.analogweb.ContainerAdaptor;
 import org.analogweb.Invocation;
 import org.analogweb.InvocationArguments;
 import org.analogweb.InvocationMetadata;
-import org.analogweb.annotation.On;
+import org.analogweb.annotation.Route;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Before;
@@ -185,26 +185,26 @@ public class OvalInvocationProcessorTest {
 		assertThat(actual.all().size(), is(0));
 	}
 
-	@On
+	@Route
 	public static class EntryPointInstance {
 
-		@On
+		@Route
 		public String doNothing(String b) {
 			return "Do nothing.";
 		}
 
-		@On
+		@Route
 		public String doSomething(@AssertValid Bean b) {
 			return "Do something.";
 		}
 
-		@On
+		@Route
 		@AssertValid
 		public String doSomethingElse(Bean b) {
 			return "Do something.";
 		}
 
-		@On
+		@Route
 		public String doAnything(@AssertValid Bean b,
 				ConstraintViolations<ConstraintViolation> violations) {
 			return "Do anything.";
