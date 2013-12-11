@@ -59,13 +59,13 @@
 		<dependency>
 			<groupId>org.analogweb</groupId>
 			<artifactId>analogweb-core</artifactId>
-			<version>0.8.0</version>
+			<version>0.8.1-SNAPSHOT</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.oval</groupId>
 			<artifactId>oval</artifactId>
-			<version>1.81</version>
+			<version>1.84</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
