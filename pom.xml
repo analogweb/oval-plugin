@@ -28,20 +28,19 @@
 		<name>Analog Web Framework Development Team</name>
 	</organization>
 	<properties>
-		<maven.compiler.target>1.6</maven.compiler.target>
-		<maven.compiler.source>1.6</maven.compiler.source>
+		<maven.compiler.target>1.7</maven.compiler.target>
+		<maven.compiler.source>1.7</maven.compiler.source>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
 	<issueManagement />
 	<ciManagement />
-	<inceptionYear>2013</inceptionYear>
+	<inceptionYear>2014</inceptionYear>
 	<contributors />
 	<scm>
 		<connection>scm:git:git@github.com:analogweb/oval-plugin.git</connection>
 		<developerConnection>scm:git:git@github.com:analogweb/oval-plugin.git</developerConnection>
-	  <tag>HEAD</tag>
-  </scm>
+    </scm>
 	<licenses>
 		<license>
 			<name>MIT license</name>
@@ -60,14 +59,12 @@
 		<dependency>
 			<groupId>org.analogweb</groupId>
 			<artifactId>analogweb-core</artifactId>
-			<version>0.8.2</version>
-			<optional>true</optional>
+			<version>0.9.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.oval</groupId>
 			<artifactId>oval</artifactId>
 			<version>1.84</version>
-			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
