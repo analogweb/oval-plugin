@@ -41,8 +41,7 @@
 		<url>scm:git:git@github.com:analogweb/oval-plugin.git</url>
 		<connection>scm:git:git@github.com:analogweb/oval-plugin.git</connection>
 		<developerConnection>scm:git:git@github.com:analogweb/oval-plugin.git</developerConnection>
-      <tag>HEAD</tag>
-  </scm>
+    </scm>
 	<licenses>
 		<license>
 			<name>MIT license</name>
@@ -61,7 +60,7 @@
 		<dependency>
 			<groupId>org.analogweb</groupId>
 			<artifactId>analogweb-core</artifactId>
-			<version>0.9.0</version>
+			<version>0.9.1</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.oval</groupId>
