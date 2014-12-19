@@ -41,8 +41,7 @@
 		<url>scm:git:git@github.com:analogweb/oval-plugin.git</url>
 		<connection>scm:git:git@github.com:analogweb/oval-plugin.git</connection>
 		<developerConnection>scm:git:git@github.com:analogweb/oval-plugin.git</developerConnection>
-    <tag>HEAD</tag>
-  </scm>
+    </scm>
 	<licenses>
 		<license>
 			<name>MIT license</name>
