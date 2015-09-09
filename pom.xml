@@ -20,7 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.analogweb</groupId>
 	<artifactId>analogweb-oval</artifactId>
-	<version>0.9.9-SNAPSHOT</version>
+	<version>0.9.10</version>
 	<packaging>jar</packaging>
 	<name>analogweb-oval</name>
 	<url>https://github.com/analogweb</url>
@@ -41,7 +41,7 @@
 		<url>scm:git:git@github.com:analogweb/oval-plugin.git</url>
 		<connection>scm:git:git@github.com:analogweb/oval-plugin.git</connection>
 		<developerConnection>scm:git:git@github.com:analogweb/oval-plugin.git</developerConnection>
-      <tag>HEAD</tag>
+      <tag>v0.9.10</tag>
   </scm>
 	<licenses>
 		<license>
@@ -61,7 +61,7 @@
 		<dependency>
 			<groupId>org.analogweb</groupId>
 			<artifactId>analogweb-core</artifactId>
-			<version>0.9.9-SNAPSHOT</version>
+			<version>0.9.10</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.oval</groupId>
